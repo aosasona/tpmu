@@ -1,3 +1,4 @@
 fn main() {
-    tpmu::list_processes()
+    let processes = tpmu::list_processes();
+    println!("{:?}", processes);
 }

@@ -1,3 +1,2 @@
 [codespell]
 ignore_words = "crate"
-# skip = *.rs
