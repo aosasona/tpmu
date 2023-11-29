@@ -43,7 +43,7 @@ impl Process {
     }
 }
 
-pub struct ListProcessesOpts {
+pub struct ListOpts {
     /// The fields to include in the output
     pub fields: Vec<Field>,
 
@@ -51,7 +51,7 @@ pub struct ListProcessesOpts {
     pub with_ports: bool,
 }
 
-impl ListProcessesOpts {
+impl ListOpts {
     pub fn new(fields: Vec<Field>, with_ports: bool) -> Self {
         Self { fields, with_ports }
     }
@@ -69,7 +69,7 @@ impl ListProcessesOpts {
     }
 }
 
-pub fn list_processes(opts: ListProcessesOpts) -> Result<Vec<Process>, String> {
+pub fn list_processes(opts: ListOpts) -> Result<Vec<Process>, String> {
     let manager = crate::manager::Manager::new();
     let output = manager.run_ps(opts.fields)?;
     let processes = manager.parse_ps_output(output)?;
