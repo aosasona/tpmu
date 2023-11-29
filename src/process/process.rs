@@ -18,6 +18,9 @@ pub struct Process {
     /// Time since the process started in seconds
     pub time_started: Option<usize>,
 
+    // The terminal the process is running on if any
+    pub tty: Option<String>,
+
     /// The port the process is listening on if any
     pub port: Option<u16>,
 }
@@ -33,8 +36,9 @@ impl Process {
             pid: None,
             parent_pid: None,
             command: None,
-            port: None,
+            tty: None,
             time_started: None,
+            port: None,
         }
     }
 }
@@ -67,7 +71,8 @@ impl ListProcessesOpts {
 
 pub fn list_processes(opts: ListProcessesOpts) -> Result<Vec<Process>, String> {
     let manager = crate::manager::Manager::new();
-    let _ = manager.run_ps(opts.fields)?;
+    let output = manager.run_ps(opts.fields)?;
+    let processes = manager.parse_ps_output(output)?;
 
-    Err("Not implemented".to_string())
+    Ok(processes)
 }

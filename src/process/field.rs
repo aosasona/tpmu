@@ -1,3 +1,4 @@
+#[derive(Copy, Clone)]
 pub enum Command {
     /// Fetch the full path of the binary that started this process
     FullPath,
@@ -6,6 +7,7 @@ pub enum Command {
     ExecutableName,
 }
 
+#[derive(Copy, Clone)]
 pub enum Field {
     Pid,
     Ppid,
@@ -17,7 +19,7 @@ pub enum Field {
 
 impl From<String> for Field {
     fn from(value: String) -> Self {
-        match value.as_str() {
+        match value.to_lowercase().as_str() {
             "pid" => Self::Pid,
             "ppid" => Self::Ppid,
             "uid" => Self::Uid,
