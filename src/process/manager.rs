@@ -1,6 +1,6 @@
 use std::process::Command as StdCommand;
 
-use crate::{field::Field, Process};
+use crate::{field::Field, tokenizer::Tokenizer, Process};
 
 pub struct Manager {}
 
@@ -83,17 +83,11 @@ impl Manager {
         Ok(processes)
     }
 
-    fn tokenize(&self, expected_fields_count: usize, line: &str) -> Result<Vec<String>, String> {
-        let mut tokens = Vec::new();
-
-        Ok(tokens)
-    }
-
     fn parse_line(&self, expected_fields: Vec<Field>, line: &str) -> Result<Process, String> {
         let mut process = Process::blank_new();
 
-        // TODO: tokenize instead of splitting by whitespace to handle spaces in command
-        let raw_fields = line.split_whitespace();
+        let tokenizer = Tokenizer::new(line.into(), expected_fields.clone());
+        let raw_fields = tokenizer.tokenize()?.into_iter();
 
         for (i, raw_field) in raw_fields.enumerate() {
             if let Some(field_type) = expected_fields.get(i) {
@@ -130,7 +124,7 @@ impl Manager {
                         }
                     }
                     Field::Time => {
-                        let time = self.parse_time(raw_field)?;
+                        let time = self.parse_time(&raw_field.clone())?;
                         process.time_started = Some(time)
                     }
                     Field::Comm(_) => {

@@ -17,6 +17,19 @@ pub enum Field {
     Comm(Command),
 }
 
+impl Field {
+    pub fn has_one_ident(self) -> bool {
+        match self {
+            Field::Pid => true,
+            Field::Ppid => todo!(),
+            Field::Uid => todo!(),
+            Field::Tty => todo!(),
+            Field::Time => todo!(),
+            Field::Comm(_) => todo!(),
+        }
+    }
+}
+
 impl From<String> for Field {
     fn from(value: String) -> Self {
         match value.to_lowercase().as_str() {
