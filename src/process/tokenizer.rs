@@ -1,11 +1,15 @@
 use crate::field::Field;
 
+// steps to parse
+// - we need to figure out where the single & multi-word fields are
+// - we need to use that to figure out where the fields are and hence where the values are
+
 pub(crate) struct Tokenizer {
     input: Vec<u8>,
     current_char: u8,
     current_pos: usize,
     read_pos: usize,
-    expected_fields: Vec<Field>,
+    pub expected_fields: Vec<Field>,
 }
 
 impl Tokenizer {

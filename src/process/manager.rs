@@ -86,11 +86,11 @@ impl Manager {
     fn parse_line(&self, expected_fields: Vec<Field>, line: &str) -> Result<Process, String> {
         let mut process = Process::blank_new();
 
-        let tokenizer = Tokenizer::new(line.into(), expected_fields.clone());
+        let tokenizer = Tokenizer::new(line.into(), expected_fields);
         let raw_fields = tokenizer.tokenize()?.into_iter();
 
         for (i, raw_field) in raw_fields.enumerate() {
-            if let Some(field_type) = expected_fields.get(i) {
+            if let Some(field_type) = tokenizer.expected_fields.get(i) {
                 match field_type {
                     Field::Pid => {
                         process.pid = Some(
