@@ -19,14 +19,9 @@ pub enum Field {
 
 impl Field {
     pub fn has_one_ident(self) -> bool {
-        // TODO: implement this
         match self {
-            Field::Pid => true,
-            Field::Ppid => todo!(),
-            Field::Uid => todo!(),
-            Field::Tty => todo!(),
-            Field::Time => todo!(),
-            Field::Comm(_) => todo!(),
+            Field::Comm(_) => false,
+            _ => true,
         }
     }
 }
