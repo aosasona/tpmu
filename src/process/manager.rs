@@ -18,7 +18,7 @@ impl Manager {
         command.arg("-A");
 
         let mut fields_str_vec = Vec::new();
-        for field in fields {
+        for field in self.sort_fields(fields) {
             let field_str: String = field.into();
             if fields_str_vec.contains(&field_str) {
                 continue;
@@ -183,5 +183,18 @@ impl Manager {
     fn parse_headers(&self, header: String) -> Vec<Header> {
         let mut header_parser = HeaderParser::new(header);
         return header_parser.parse();
+    }
+
+    // Sort the fields so that the fields with one identifier are first
+    fn sort_fields(&self, mut fields: Vec<Field>) -> Vec<Field> {
+        fields.sort_by(|a, _| {
+            if a.has_one_ident() {
+                return std::cmp::Ordering::Less;
+            } else {
+                return std::cmp::Ordering::Greater;
+            }
+        });
+
+        return fields;
     }
 }

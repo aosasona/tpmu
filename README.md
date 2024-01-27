@@ -1,6 +1,6 @@
 # tpmu 🦀
 
-tpmu(**T**iny **P**rocess **M**anagement **U**til) is a tiny rust library to interact with processes via `ps` and other utils.
+tpmu (**T**iny **P**rocess **M**anagement **U**til) is a tiny rust library to interact with processes via `ps` and other utils.
 
 ```rust
 use tpmu::{

@@ -1,4 +1,4 @@
-use crate::field::*;
+use crate::{field::*, manager::Manager};
 
 #[derive(Debug, Clone)]
 pub struct Process {
@@ -23,10 +23,6 @@ pub struct Process {
 
     /// The port the process is listening on if any
     pub port: Option<u16>,
-}
-
-pub(crate) trait Manager {
-    fn list_processes(&self) -> Result<Vec<Process>, String>;
 }
 
 impl Process {
@@ -70,7 +66,7 @@ impl ListOpts {
 }
 
 pub fn list_processes(opts: ListOpts) -> Result<Vec<Process>, String> {
-    let manager = crate::manager::Manager::new();
+    let manager = Manager::new();
     let output = manager.run_ps(opts.fields)?;
     let processes = manager.parse_ps_output(&output)?;
 
