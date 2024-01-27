@@ -3,7 +3,6 @@ use std::process::Command as StdCommand;
 use crate::{
     field::Field,
     header::{Header, Parser as HeaderParser},
-    tokenizer::Tokenizer,
     Process,
 };
 
@@ -88,64 +87,64 @@ impl Manager {
         Ok(processes)
     }
 
-    fn parse_line(&self, parsed_headers: Vec<Header>, line: &str) -> Result<Process, String> {
+    fn parse_line(&self, headers: Vec<Header>, line: &str) -> Result<Process, String> {
         let mut process = Process::blank_new();
-        let tokenizer = Tokenizer::new(line.into(), parsed_headers);
-        // TODO: handle tokens for the line here
-        let raw_fields = tokenizer.tokenize()?.into_iter();
+        for (i, header) in headers.iter().enumerate() {
+            // If this is the last item, the end position should be the end of the line itself
+            // this is to account for any extra characters
+            let end_pos = if i == (headers.len() - 1) {
+                line.len()
+            } else {
+                header.position.end_col
+            };
 
-        // for (i, raw_field) in raw_fields.enumerate() {
-        //     if let Some(field_type) = tokenizer.expected_fields.get(i) {
-        //         match field_type {
-        //             Field::Pid => {
-        //                 process.pid = Some(
-        //                     raw_field
-        //                         .parse::<u32>()
-        //                         .map_err(|e| format!("Failed to parse pid: {}", e))?,
-        //                 )
-        //             }
-        //             Field::Ppid => {
-        //                 process.parent_pid = Some(
-        //                     raw_field
-        //                         .parse::<u32>()
-        //                         .map_err(|e| format!("Failed to parse ppid: {}", e))?,
-        //                 )
-        //             }
-        //             Field::Uid => {
-        //                 process.uid = Some(
-        //                     raw_field
-        //                         .parse::<u32>()
-        //                         .map_err(|e| format!("Failed to parse uid: {}", e))?,
-        //                 )
-        //             }
-        //             Field::Tty => {
-        //                 let tty = raw_field
-        //                     .parse::<String>()
-        //                     .map_err(|e| format!("Failed to parse tty: {}", e))?;
-        //                 if tty.contains("?") {
-        //                     process.tty = None
-        //                 } else {
-        //                     process.tty = Some(tty)
-        //                 }
-        //             }
-        //             Field::Time => {
-        //                 let time = self.parse_time(&raw_field.clone())?;
-        //                 process.time_started = Some(time)
-        //             }
-        //             Field::Comm(_) => {
-        //                 let command = raw_field.parse::<String>().map_err(|e| {
-        //                     format!("Failed to parse command: {} from {}", e, raw_field)
-        //                 })?;
-        //                 process.command = Some(command)
-        //             }
-        //         }
-        //     } else {
-        //         return Err(format!(
-        //             "Unable to parse line because field type was not found in expected fields: {}",
-        //             line
-        //         ));
-        //     }
-        // }
+            let raw_value = line[header.position.start_col..end_pos].to_string();
+            let value = raw_value.trim();
+
+            match header.field {
+                Field::Pid => {
+                    process.pid = Some(
+                        value
+                            .parse::<u32>()
+                            .map_err(|e| format!("Failed to parse pid: {}", e))?,
+                    )
+                }
+                Field::Ppid => {
+                    process.parent_pid = Some(
+                        value
+                            .parse::<u32>()
+                            .map_err(|e| format!("Failed to parse ppid: {}", e))?,
+                    )
+                }
+                Field::Uid => {
+                    process.uid = Some(
+                        value
+                            .parse::<u32>()
+                            .map_err(|e| format!("Failed to parse uid: {}", e))?,
+                    )
+                }
+                Field::Tty => {
+                    let tty = value
+                        .parse::<String>()
+                        .map_err(|e| format!("Failed to parse tty: {}", e))?;
+                    if tty.contains("?") {
+                        process.tty = None
+                    } else {
+                        process.tty = Some(tty)
+                    }
+                }
+                Field::Time => {
+                    let time = self.parse_time(&value)?;
+                    process.time_started = Some(time)
+                }
+                Field::Comm(_) => {
+                    let command = value
+                        .parse::<String>()
+                        .map_err(|e| format!("Failed to parse command: {} from {}", e, value))?;
+                    process.command = Some(command)
+                }
+            }
+        }
 
         Ok(process)
     }

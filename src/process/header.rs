@@ -10,6 +10,7 @@ pub(crate) struct Header {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 // Represents a position in a string
+// start_col is inclusive, end_col is exclusive i.e (0..4) means 0, 1, 2, 3
 // Positions are zero-indexed and meant to be used with the string slice like this:
 // string[Position.start_col..Position.end_col]
 pub(crate) struct Position {
