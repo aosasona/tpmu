@@ -72,7 +72,7 @@ impl ListOpts {
 pub fn list_processes(opts: ListOpts) -> Result<Vec<Process>, String> {
     let manager = crate::manager::Manager::new();
     let output = manager.run_ps(opts.fields)?;
-    let processes = manager.parse_ps_output(output)?;
+    let processes = manager.parse_ps_output(&output)?;
 
     Ok(processes)
 }

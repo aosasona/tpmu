@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Command {
     /// Fetch the full path of the binary that started this process
     FullPath,
@@ -7,7 +7,7 @@ pub enum Command {
     ExecutableName,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Field {
     Pid,
     Ppid,

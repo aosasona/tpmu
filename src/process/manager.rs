@@ -1,6 +1,11 @@
 use std::process::Command as StdCommand;
 
-use crate::{field::Field, tokenizer::Tokenizer, Process};
+use crate::{
+    field::Field,
+    header::{Header, Parser as HeaderParser},
+    tokenizer::Tokenizer,
+    Process,
+};
 
 pub struct Manager {}
 
@@ -66,13 +71,13 @@ impl Manager {
         Ok(res)
     }
 
-    pub fn parse_ps_output(&self, output: String) -> Result<Vec<Process>, String> {
+    pub fn parse_ps_output(&self, output: &str) -> Result<Vec<Process>, String> {
         let mut lines = output.lines();
 
         let header = lines
             .next()
             .ok_or_else(|| "No header found in ps output".to_string())?;
-        let fields = self.parse_headers(header)?;
+        let fields = self.parse_headers(header.into());
 
         let mut processes = Vec::new();
 
@@ -83,64 +88,64 @@ impl Manager {
         Ok(processes)
     }
 
-    fn parse_line(&self, expected_fields: Vec<Field>, line: &str) -> Result<Process, String> {
+    fn parse_line(&self, parsed_headers: Vec<Header>, line: &str) -> Result<Process, String> {
         let mut process = Process::blank_new();
-
-        let tokenizer = Tokenizer::new(line.into(), expected_fields);
+        let tokenizer = Tokenizer::new(line.into(), parsed_headers);
+        // TODO: handle tokens for the line here
         let raw_fields = tokenizer.tokenize()?.into_iter();
 
-        for (i, raw_field) in raw_fields.enumerate() {
-            if let Some(field_type) = tokenizer.expected_fields.get(i) {
-                match field_type {
-                    Field::Pid => {
-                        process.pid = Some(
-                            raw_field
-                                .parse::<u32>()
-                                .map_err(|e| format!("Failed to parse pid: {}", e))?,
-                        )
-                    }
-                    Field::Ppid => {
-                        process.parent_pid = Some(
-                            raw_field
-                                .parse::<u32>()
-                                .map_err(|e| format!("Failed to parse ppid: {}", e))?,
-                        )
-                    }
-                    Field::Uid => {
-                        process.uid = Some(
-                            raw_field
-                                .parse::<u32>()
-                                .map_err(|e| format!("Failed to parse uid: {}", e))?,
-                        )
-                    }
-                    Field::Tty => {
-                        let tty = raw_field
-                            .parse::<String>()
-                            .map_err(|e| format!("Failed to parse tty: {}", e))?;
-                        if tty.contains("?") {
-                            process.tty = None
-                        } else {
-                            process.tty = Some(tty)
-                        }
-                    }
-                    Field::Time => {
-                        let time = self.parse_time(&raw_field.clone())?;
-                        process.time_started = Some(time)
-                    }
-                    Field::Comm(_) => {
-                        let command = raw_field.parse::<String>().map_err(|e| {
-                            format!("Failed to parse command: {} from {}", e, raw_field)
-                        })?;
-                        process.command = Some(command)
-                    }
-                }
-            } else {
-                return Err(format!(
-                    "Unable to parse line because field type was not found in expected fields: {}",
-                    line
-                ));
-            }
-        }
+        // for (i, raw_field) in raw_fields.enumerate() {
+        //     if let Some(field_type) = tokenizer.expected_fields.get(i) {
+        //         match field_type {
+        //             Field::Pid => {
+        //                 process.pid = Some(
+        //                     raw_field
+        //                         .parse::<u32>()
+        //                         .map_err(|e| format!("Failed to parse pid: {}", e))?,
+        //                 )
+        //             }
+        //             Field::Ppid => {
+        //                 process.parent_pid = Some(
+        //                     raw_field
+        //                         .parse::<u32>()
+        //                         .map_err(|e| format!("Failed to parse ppid: {}", e))?,
+        //                 )
+        //             }
+        //             Field::Uid => {
+        //                 process.uid = Some(
+        //                     raw_field
+        //                         .parse::<u32>()
+        //                         .map_err(|e| format!("Failed to parse uid: {}", e))?,
+        //                 )
+        //             }
+        //             Field::Tty => {
+        //                 let tty = raw_field
+        //                     .parse::<String>()
+        //                     .map_err(|e| format!("Failed to parse tty: {}", e))?;
+        //                 if tty.contains("?") {
+        //                     process.tty = None
+        //                 } else {
+        //                     process.tty = Some(tty)
+        //                 }
+        //             }
+        //             Field::Time => {
+        //                 let time = self.parse_time(&raw_field.clone())?;
+        //                 process.time_started = Some(time)
+        //             }
+        //             Field::Comm(_) => {
+        //                 let command = raw_field.parse::<String>().map_err(|e| {
+        //                     format!("Failed to parse command: {} from {}", e, raw_field)
+        //                 })?;
+        //                 process.command = Some(command)
+        //             }
+        //         }
+        //     } else {
+        //         return Err(format!(
+        //             "Unable to parse line because field type was not found in expected fields: {}",
+        //             line
+        //         ));
+        //     }
+        // }
 
         Ok(process)
     }
@@ -176,12 +181,8 @@ impl Manager {
         Ok(time)
     }
 
-    fn parse_headers(&self, header: &str) -> Result<Vec<Field>, String> {
-        let mut fields = Vec::new();
-        for field in header.split_whitespace() {
-            fields.push(Field::from(field.to_string()));
-        }
-
-        Ok(fields)
+    fn parse_headers(&self, header: String) -> Vec<Header> {
+        let mut header_parser = HeaderParser::new(header);
+        return header_parser.parse();
     }
 }
