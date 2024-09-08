@@ -15,7 +15,10 @@ fn main() {
     })
     .expect("Failed to list processes");
 
-    for process in processes {
-        println!("{:?}", process.command);
+    for (count, process) in processes.into_iter().enumerate() {
+        if count >= 20 {
+            break;
+        }
+        println!("{:?}-{:?}", process.command, process.time_started);
     }
 }

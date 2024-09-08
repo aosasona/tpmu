@@ -51,8 +51,10 @@ impl ListOpts {
     pub fn new(fields: Vec<Field>, with_ports: bool) -> Self {
         Self { fields, with_ports }
     }
+}
 
-    pub fn default() -> Self {
+impl Default for ListOpts {
+    fn default() -> Self {
         Self {
             fields: vec![
                 Field::Pid,
@@ -69,6 +71,11 @@ pub fn list_processes(opts: ListOpts) -> Result<Vec<Process>, String> {
     let manager = Manager::new();
     let output = manager.run_ps(opts.fields)?;
     let processes = manager.parse_ps_output(&output)?;
+    // TODO: handle ports
 
     Ok(processes)
+}
+
+pub fn get_pid_by_port(_port: u16) -> Option<u32> {
+    None
 }
